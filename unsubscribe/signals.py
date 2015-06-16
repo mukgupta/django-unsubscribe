@@ -2,4 +2,4 @@
 from __future__ import unicode_literals
 from django.dispatch import Signal
 
-user_unsubscribed = Signal(providing_args=['user'])
+user_unsubscribed = Signal(providing_args=['list', 'user'])

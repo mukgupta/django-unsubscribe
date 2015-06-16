@@ -16,12 +16,12 @@ class UnsubscribableEmailMessage(EmailMultiAlternatives):
     object and appends a `List-Unsubscribe` header to the email message
     """
 
-    def __init__(self, user, subject='', body='', from_email=None, to=None,
+    def __init__(self, user, slist, subject='', body='', from_email=None, to=None,
                  bcc=None, connection=None, attachments=None,
                  headers=None, alternatives=None):
         unsub_headers = headers or {}
         unsub_url = reverse('unsubscribe_unsubscribe',
-                            args=[user.pk, get_token_for_user(user)])
+                            args=[user.pk, slist.sid, get_token_for_user(user)])
 
         # TODO fix scheme not to be hard coded.
         protocol = 'http'
