@@ -47,3 +47,18 @@ class UnsubscribeTest(TestCase):
         c.get(url)
         self.assertEqual(Unsubscription.objects.filter(uid=self.user, slist=self.unsubscribe_list).count(), 1)
         self.assertTrue(closure_test[0])
+
+    def test_try_sending_email_after_unsubscribing(self):
+        from django.test.client import Client
+        c = Client()
+        url = reverse('unsubscribe_unsubscribe',
+                      args=(self.user.pk, self.unsubscribe_list.sid, get_token_for_user(self.user)))
+        c.get(url)
+        self.assertEqual(Unsubscription.objects.filter(uid=self.user, slist=self.unsubscribe_list).count(), 1)
+
+        msg = UnsubscribableEmailMessage(self.user, self.unsubscribe_list, "Test Message", "Body",
+                                         from_email="test@testserver.com", to=["testemail@somewhereelse.com"])
+        msg.send()
+
+        from django.core.mail import outbox
+        self.assertEquals(len(outbox), 0)

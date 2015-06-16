@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.sites.models import Site
 
 from .utils import get_token_for_user
+from .models import Unsubscription
 
 
 class UnsubscribableEmailMessage(EmailMultiAlternatives):
@@ -19,6 +20,8 @@ class UnsubscribableEmailMessage(EmailMultiAlternatives):
     def __init__(self, user, slist, subject='', body='', from_email=None, to=None,
                  bcc=None, connection=None, attachments=None,
                  headers=None, alternatives=None):
+        self.user = user
+        self.list = slist
         unsub_headers = headers or {}
         unsub_url = reverse('unsubscribe_unsubscribe',
                             args=[user.pk, slist.sid, get_token_for_user(user)])
@@ -50,3 +53,9 @@ class UnsubscribableEmailMessage(EmailMultiAlternatives):
             context = {}
         context['unsubscribe_url'] = self.unsubscribe_url
         return render_to_string(template, context)
+
+    def send(self, fail_silently=False):
+        user_unsubscribed = Unsubscription.objects.filter(uid=self.user, slist=self.list).count() > 0
+        if user_unsubscribed:
+            return
+        super(UnsubscribableEmailMessage, self).send(fail_silently)
