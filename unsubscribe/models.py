@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
+from .signals import user_unsubscribed
+from django.dispatch.dispatcher import receiver
 
 
 class SubscriptionList(models.Model):
@@ -13,6 +15,14 @@ class SubscriptionList(models.Model):
 
 
 class Unsubscription(models.Model):
-    uid = models.ForeignKey(User, related_name='unsubscriptions', blank=False, null=False)
-    slist = models.ForeignKey(SubscriptionList, verbose_name="Subscription List", related_name='unsubscriptions', blank=False, null=False)
-    time = models.DateTimeField(verbose_name="Unsubsription Time", auto_now_add=True, blank=False, null=False)
+    uid = models.ForeignKey(
+        User, related_name='unsubscriptions', blank=False, null=False)
+    slist = models.ForeignKey(SubscriptionList, verbose_name="Subscription List",
+                              related_name='unsubscriptions', blank=False, null=False)
+    time = models.DateTimeField(
+        verbose_name="Unsubsription Time", auto_now_add=True, blank=False, null=False)
+
+    @classmethod
+    @receiver(user_unsubscribed)
+    def unsubscribe_user_from_list(sender, list, user, **kwargs):
+        Unsubscription.objects.get_or_create(uid=user, slist=list)

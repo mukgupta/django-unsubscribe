@@ -7,7 +7,8 @@ from django.core.urlresolvers import reverse
 
 from unsubscribe.mail import UnsubscribableEmailMessage
 from unsubscribe.utils import get_token_for_user
-from unsubscribe.models import SubscriptionList
+from unsubscribe.models import SubscriptionList, Unsubscription
+
 
 class UnsubscribeTest(TestCase):
 
@@ -44,4 +45,5 @@ class UnsubscribeTest(TestCase):
         url = reverse('unsubscribe_unsubscribe',
                       args=(self.user.pk, self.unsubscribe_list.sid, get_token_for_user(self.user)))
         c.get(url)
+        self.assertEqual(Unsubscription.objects.filter(uid=self.user, slist=self.unsubscribe_list).count(), 1)
         self.assertTrue(closure_test[0])
