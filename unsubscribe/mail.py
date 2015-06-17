@@ -29,19 +29,12 @@ class UnsubscribableEmailMessage(EmailMultiAlternatives):
         # TODO fix scheme not to be hard coded.
         protocol = 'http'
         site_url = '%s://%s' % (protocol, Site.objects.get_current().domain)
-        unsub_headers['List-Unsubscribe'] = '<%s%s>' % (site_url, unsub_url)
+        self.unsubscribe_url = '%s%s' % (site_url, unsub_url)
+        unsub_headers['List-Unsubscribe'] = '<%s>' % self.unsubscribe_url
         super(UnsubscribableEmailMessage, self).__init__(subject=subject,
                                                          body=body, from_email=from_email, to=to, bcc=bcc,
                                                          connection=connection, attachments=attachments,
                                                          headers=unsub_headers, alternatives=alternatives)
-
-    def _get_unsubscribe_url(self):
-        return self.extra_headers['List-Unsubscribe'][1:-1]
-
-    def _set_unsubscribe_url(self, value):
-        self.extra_headers['List-Unsubscribe'] = "<%s>" % value
-
-    unsubscribe_url = property(_get_unsubscribe_url, _set_unsubscribe_url)
 
     def render_message(self, template, context=None):
         """
